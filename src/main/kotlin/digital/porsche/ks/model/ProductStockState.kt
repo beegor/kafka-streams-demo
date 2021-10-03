@@ -1,6 +1,4 @@
-package digital.porsche.ks.domain
-
-import kotlin.math.max
+package digital.porsche.ks.model
 
 data class ProductStockState(
     val productState:MutableMap<String, Int> = mutableMapOf()

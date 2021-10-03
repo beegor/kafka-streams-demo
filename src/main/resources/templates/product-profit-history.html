@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Transaction count</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.min.js" integrity="sha512-Wt1bJGtlnMtGP0dqNFH1xlkLBNpEodaiQ8ZN5JLA5wpc1sUlk/O5uuOMNgvzddzkpvZ9GLyYNa8w2s7rqiTk5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+  <style>
+    input.tfBig {
+      width: 80px;
+    }
+    input {
+      width: 30px;
+    }
+  </style>
+</head>
+<body>
+
+<div style="padding: 30px">
+  <span>Time from   <input id="fromHours"/> <input id="fromMinutes"/>
+    <input id="fromSeconds"/></span>
+
+  <span> to   <input id="toHours"/> <input id="toMinutes"/> <input id="toSeconds"/> </span>
+
+  <input type="button" class="tfBig" value="Submit" onclick="changePeriod()"/>
+</div>
+
+<div style="width: 400px; height: 400px">
+<canvas id="chartCanvas" width="400" height="400"></canvas>
+</div>
+<script th:inline="javascript">
+
+  var timeFrom = [[${timeFrom}]]
+  var timeTo = [[${timeTo}]]
+
+  var from = new Date()
+  from.setTime(timeFrom)
+  document.getElementById("fromHours").value = ("" + from.getHours()).padStart(2, '0')
+  document.getElementById("fromMinutes").value = ("" + from.getMinutes()).padStart(2, '0')
+  document.getElementById("fromSeconds").value = ("" + from.getSeconds()).padStart(2, '0')
+
+  var to = new Date()
+  to.setTime(timeTo)
+  document.getElementById("toHours").value = ("" + to.getHours()).padStart(2, '0')
+  document.getElementById("toMinutes").value = ("" + to.getMinutes()).padStart(2, '0')
+  document.getElementById("toSeconds").value = ("" + to.getSeconds()).padStart(2, '0')
+
+
+  var productColors = ["red", "blue", "green", "magenta", "cyan", "purple", "gray", "aqua", "orange"]
+  var shopId = [[${shopId}]]
+
+  var ctx = document.getElementById('chartCanvas').getContext('2d');
+
+  var labels = [[${productLabels}]]
+  var data = [[${productProfitValues}]]
+  console.log("labels", labels)
+  var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Profit by product',
+        backgroundColor: productColors,
+        data: data,
+      }]
+    },
+  });
+
+  setInterval(function (){
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        var data = JSON.parse(this.responseText)
+        myChart.data.datasets[0].data = data.productProfitValues
+        myChart.update();
+      }
+    };
+    xhttp.open("GET", "/profit-history-data?timeFrom="+timeFrom+"&timeTo="+timeTo, true);
+    xhttp.send();
+  }, 1000 )
+
+  function changePeriod() {
+    var pFrom = new Date()
+    pFrom.setHours(parseInt(document.getElementById("fromHours").value, 10))
+    pFrom.setMinutes(parseInt(document.getElementById("fromMinutes").value, 10))
+    pFrom.setSeconds(parseInt(document.getElementById("fromSeconds").value, 10))
+    pFrom.setMilliseconds(0)
+
+    var pTo = new Date()
+    pTo.setHours(parseInt(document.getElementById("toHours").value, 10))
+    pTo.setMinutes(parseInt(document.getElementById("toMinutes").value, 10))
+    pTo.setSeconds(parseInt(document.getElementById("toSeconds").value, 10))
+    pTo.setMilliseconds(0)
+
+    document.location = "/profit-history?timeFrom="+pFrom.getTime()+"&timeTo="+pTo.getTime()
+
+  }
+
+</script>
+
+</body>
+</html>

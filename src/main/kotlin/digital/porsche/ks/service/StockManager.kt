@@ -1,9 +1,6 @@
 package digital.porsche.ks.service
 
-import digital.porsche.ks.domain.ProductStockState
-import digital.porsche.ks.domain.Purchase
-import digital.porsche.ks.domain.StockEvent
-import digital.porsche.ks.domain.StockEventType
+import digital.porsche.ks.model.*
 import digital.porsche.ks.serializers.JsonSerializer
 import digital.porsche.ks.serializers.StockStateDeserializer
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -40,7 +37,7 @@ class StockManager {
         consumer = KafkaConsumer<String, ProductStockState>(config)
 
         thread {
-            consumer.subscribe(listOf("stock-state"))
+            consumer.subscribe(listOf(Constants.TOPIC_STOCK_STATE))
             while (running){
                 val records = consumer.poll(Duration.ofMillis(10))
                 records.forEach {
@@ -71,7 +68,7 @@ class StockManager {
 
     fun restock(shopId: String, productId: String){
         producer.send (
-            ProducerRecord("stock-events", shopId, StockEvent(StockEventType.ITEM_ADDED, productId, 1000))
+            ProducerRecord(Constants.TOPIC_STOCK_EVENTS, shopId, StockEvent(StockEventType.ITEM_ADDED, productId, 1000))
         )
     }
 }

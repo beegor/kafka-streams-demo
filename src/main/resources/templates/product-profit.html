@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Transaction count</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.min.js" integrity="sha512-Wt1bJGtlnMtGP0dqNFH1xlkLBNpEodaiQ8ZN5JLA5wpc1sUlk/O5uuOMNgvzddzkpvZ9GLyYNa8w2s7rqiTk5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+
+<div style="width: 400px; height: 400px">
+<canvas id="chartCanvas" width="400" height="400"></canvas>
+</div>
+<script th:inline="javascript">
+  var productColors = ["red", "blue", "green", "magenta", "cyan", "purple", "gray", "aqua", "orange"]
+  var shopId = [[${shopId}]]
+
+  var ctx = document.getElementById('chartCanvas').getContext('2d');
+
+  var labels = [[${productLabels}]]
+  var data = [[${productProfitValues}]]
+  console.log("labels", labels)
+  var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Profit by product',
+        backgroundColor: productColors,
+        data: data,
+      }]
+    },
+  });
+
+  setInterval(function (){
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        var data = JSON.parse(this.responseText)
+        myChart.data.datasets[0].data = data.productProfitValues
+        myChart.update();
+      }
+    };
+    xhttp.open("GET", "/profit-data", true);
+    xhttp.send();
+  }, 200 )
+
+</script>
+
+</body>
+</html>

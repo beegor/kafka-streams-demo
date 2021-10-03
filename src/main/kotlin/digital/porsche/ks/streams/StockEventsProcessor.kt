@@ -1,9 +1,6 @@
-package digital.porsche.ks.service
+package digital.porsche.ks.streams
 
-import digital.porsche.ks.domain.ProductStockState
-import digital.porsche.ks.domain.Purchase
-import digital.porsche.ks.domain.StockEvent
-import digital.porsche.ks.domain.StockEventType
+import digital.porsche.ks.model.*
 import digital.porsche.ks.serializers.createJSONSerde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
@@ -15,7 +12,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class StockEventsProcessingService {
+class StockEventsProcessor {
 
     private val streamingApp:KafkaStreams
 
@@ -31,7 +28,7 @@ class StockEventsProcessingService {
     private fun buildTopology(): Topology {
         val builder = StreamsBuilder()
         val purchasesStream: KStream<String, StockEvent> = builder.stream(
-            "stock-events",
+            Constants.TOPIC_STOCK_EVENTS,
             Consumed.with(Serdes.String(), createJSONSerde(StockEvent::class.java))
         )
 
@@ -50,9 +47,7 @@ class StockEventsProcessingService {
                 Materialized.with(Serdes.String(), createJSONSerde(ProductStockState::class.java))
             )
             .toStream()
-            .to(
-                "stock-state"
-            )
+            .to("stock-state")
 
         val topology = builder.build()
         println(topology.describe().toString())

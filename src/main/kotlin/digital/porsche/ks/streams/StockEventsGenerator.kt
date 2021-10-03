@@ -1,8 +1,9 @@
-package digital.porsche.ks.service
+package digital.porsche.ks.streams
 
-import digital.porsche.ks.domain.Purchase
-import digital.porsche.ks.domain.StockEvent
-import digital.porsche.ks.domain.StockEventType
+import digital.porsche.ks.model.Constants
+import digital.porsche.ks.model.Purchase
+import digital.porsche.ks.model.StockEvent
+import digital.porsche.ks.model.StockEventType
 import digital.porsche.ks.serializers.createJSONSerde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class PurchasesProcessingService {
+class StockEventsGenerator {
 
     private val streamingApp:KafkaStreams
 
@@ -30,7 +31,7 @@ class PurchasesProcessingService {
     private fun buildTopology(): Topology {
         val builder = StreamsBuilder()
         val purchasesStream: KStream<String, Purchase> = builder.stream(
-            "purchases",
+            Constants.TOPIC_PURCHASES,
             Consumed.with(Serdes.String(), createJSONSerde(Purchase::class.java))
         )
 
@@ -39,7 +40,7 @@ class PurchasesProcessingService {
                 purchase.products.entries.map { StockEvent(StockEventType.ITEM_REMOVED, it.key, it.value) }
             }
             .to(
-                "stock-events",
+                Constants.TOPIC_STOCK_EVENTS,
                 Produced.with( Serdes.String(), createJSONSerde(StockEvent::class.java))
             )
 

@@ -17,6 +17,7 @@ services:
     container_name: broker
     depends_on:
       - zookeeper
+      - demodatabase
     ports:
       - "9092:9092"
       - "9101:9101"
@@ -39,6 +40,18 @@ services:
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+
+  demodatabase:
+    image: "postgres:13-alpine"
+    hostname: demo_db
+    container_name: demo_db
+    ports:
+      - "5432:5432"
+    environment:
+      - "POSTGRES_USER=admin"
+      - "POSTGRES_PASSWORD=admin"
+      - "POSTGRES_DB=retail"
+
 
 #  schema-registry:
 #    image: confluentinc/cp-schema-registry:6.2.1

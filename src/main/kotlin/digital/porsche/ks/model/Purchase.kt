@@ -1,4 +1,4 @@
-package digital.porsche.ks.domain
+package digital.porsche.ks.model
 
 class Purchase (
     val shopId: String,
