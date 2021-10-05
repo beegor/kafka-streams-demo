@@ -75,7 +75,7 @@ class ProfitCalculator {
             )
 
         val topology = builder.build()
-        println(topology.describe().toString())
+        println("Profit calculator " + topology.describe().toString())
         return topology
     }
 

@@ -21,6 +21,7 @@ class ProductProfitHistoryCalculator {
         config[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = "localhost:9092"
         config[StreamsConfig.APPLICATION_ID_CONFIG] = "profit-history-calculator-app"
         config[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = 1000
+        config[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = StreamsConfig.EXACTLY_ONCE
         streamingApp = KafkaStreams(buildTopology(), config)
         streamingApp.start()
     }
@@ -93,7 +94,7 @@ class ProductProfitHistoryCalculator {
 
 
         val topology = builder.build()
-        println(topology.describe().toString())
+        println("Profit history calculator " + topology.describe().toString())
         return topology
     }
 

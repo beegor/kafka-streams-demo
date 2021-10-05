@@ -29,6 +29,7 @@ class StockEventsGenerator {
     }
 
     private fun buildTopology(): Topology {
+
         val builder = StreamsBuilder()
         val purchasesStream: KStream<String, Purchase> = builder.stream(
             Constants.TOPIC_PURCHASES,
@@ -46,7 +47,7 @@ class StockEventsGenerator {
 
 
         val topology = builder.build()
-        println(topology.describe().toString())
+        println("StockEvents generator " + topology.describe().toString())
         return topology
     }
 

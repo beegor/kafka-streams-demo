@@ -15,7 +15,7 @@ import kotlin.math.min
 import kotlin.random.Random
 
 @Service
-class DemoProducer (private val stockManager: StockManager){
+class PurchaseSimulator (private val stockManager: StockManager){
 
     private lateinit var producer: KafkaProducer<String, Any>
     private val active = AtomicBoolean(true)
@@ -42,10 +42,8 @@ class DemoProducer (private val stockManager: StockManager){
     private fun run(){
         thread {
             println("Purchase producing started!")
-            var successCount = 0
-            var failCount = 0
-            while (active.get()) {
 
+            while (active.get()) {
                 val shop = getShops().random()
                 val randomProducts: MutableMap<String, Int>  = mutableMapOf()
                 (1..Random.nextInt(2, 7)).forEach {
@@ -61,16 +59,7 @@ class DemoProducer (private val stockManager: StockManager){
 
                 val purchase = Purchase(shop.id, randomProducts)
                 val producerRecord: ProducerRecord<String, Any> = ProducerRecord(Constants.TOPIC_PURCHASES, purchase.shopId, purchase)
-                producer.send(producerRecord) { _, exception ->
-                    when (exception) {
-                        null -> successCount++
-                        else -> {
-                            exception.printStackTrace()
-                            failCount++
-                        }
-                    }
-                }
-
+                producer.send(producerRecord){ _, exception -> exception?.printStackTrace() }
                 Thread.sleep(10)
             }
             println("Purchase producing stopped!")

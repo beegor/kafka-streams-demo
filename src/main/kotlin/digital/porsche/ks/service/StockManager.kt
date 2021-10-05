@@ -1,13 +1,12 @@
 package digital.porsche.ks.service
 
-import digital.porsche.ks.model.*
+import digital.porsche.ks.model.Constants
+import digital.porsche.ks.model.ProductStockState
 import digital.porsche.ks.serializers.JsonSerializer
 import digital.porsche.ks.serializers.StockStateDeserializer
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.stereotype.Service
@@ -19,12 +18,11 @@ import kotlin.random.Random
 @Service
 class StockManager {
 
+    val stockStatesByShop = mutableMapOf<String, ProductStockState>()
+
     private val consumer: KafkaConsumer<String, ProductStockState>
     var running = true
 
-    val stockStatesByShop = mutableMapOf<String, ProductStockState>()
-
-    private val producer: KafkaProducer<String, StockEvent>
 
     init {
         val config = Properties()
@@ -58,7 +56,6 @@ class StockManager {
         producerConfig[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = "localhost:9092"
         producerConfig[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         producerConfig[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
-        producer = KafkaProducer<String, StockEvent>(producerConfig)
     }
 
     fun getStockState(shopId: String): ProductStockState? = stockStatesByShop[shopId]
@@ -66,9 +63,5 @@ class StockManager {
     fun getProductStockState(shopId: String, productId: String): Int =
         stockStatesByShop[shopId]?.productState?.get(productId) ?: 0
 
-    fun restock(shopId: String, productId: String){
-        producer.send (
-            ProducerRecord(Constants.TOPIC_STOCK_EVENTS, shopId, StockEvent(StockEventType.ITEM_ADDED, productId, 1000))
-        )
-    }
+
 }

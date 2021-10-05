@@ -27,15 +27,17 @@ class StockEventsProcessor {
 
     private fun buildTopology(): Topology {
         val builder = StreamsBuilder()
-        val purchasesStream: KStream<String, StockEvent> = builder.stream(
+
+        val stockEventsStream: KStream<String, StockEvent> = builder.stream(
             Constants.TOPIC_STOCK_EVENTS,
             Consumed.with(Serdes.String(), createJSONSerde(StockEvent::class.java))
         )
 
-        purchasesStream
+        stockEventsStream
             .groupByKey()
             .aggregate(
                 { ProductStockState() },
+
                 { shopId, stockEvent, stockState ->
                     stockState.apply {
                         when (stockEvent.eventType) {
@@ -44,13 +46,14 @@ class StockEventsProcessor {
                         }
                     }
                 },
+
                 Materialized.with(Serdes.String(), createJSONSerde(ProductStockState::class.java))
             )
             .toStream()
-            .to("stock-state")
+            .to(Constants.TOPIC_STOCK_STATE)
 
         val topology = builder.build()
-        println(topology.describe().toString())
+        println("StockEvents processor " + topology.describe().toString())
         return topology
     }
 
